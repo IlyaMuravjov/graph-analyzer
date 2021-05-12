@@ -2,10 +2,10 @@ package spbu_coding.graph_analyzer.view
 
 import javafx.scene.control.TabPane
 import spbu_coding.graph_analyzer.controller.GraphSerializationController
+import spbu_coding.graph_analyzer.controller.algorithm.LayoutService
 import spbu_coding.graph_analyzer.model.GraphAnalysisType
 import spbu_coding.graph_analyzer.utils.propertySheet
 import spbu_coding.graph_analyzer.utils.zoomScrollPane
-import spbu_coding.graph_analyzer.view.tab.LayoutTabView
 import tornadofx.*
 
 class MainView : View() {
@@ -13,18 +13,18 @@ class MainView : View() {
     private val graphProperty = serializationController.openedGraphProperty.objectBinding { GraphView(it!!) }
 
     override val root = borderpane {
-        centerProperty().bind(graphProperty.objectBinding { graph ->
-            zoomScrollPane(graph!!, scaleValue = 0.3) {
+        centerProperty().bind(graphProperty.objectBinding { graphView ->
+            zoomScrollPane(graphView!!, scaleValue = 0.3) {
                 style += "-fx-focus-color: transparent;"
                 hvalue = (hmin + hmax) / 2
                 vvalue = (vmin + vmax) / 2
             }
         })
-        leftProperty().bind(graphProperty.objectBinding { graph ->
+        leftProperty().bind(graphProperty.objectBinding { graphView ->
             tabpane {
                 tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
-                tab("General") { propertySheet(graph!!.props.propertySheetItems.toObservable()) }
-                tabs.add(LayoutTabView(graph!!))
+                tab("General") { propertySheet(graphView!!.props.propertySheetItems.toObservable()) }
+                tabs.add(GraphAlgorithmCategoryTab(LayoutService(graphView!!)))
             }
         })
         top = menubar {

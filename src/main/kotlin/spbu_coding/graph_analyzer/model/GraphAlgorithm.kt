@@ -1,16 +1,18 @@
 package spbu_coding.graph_analyzer.model
 
-import spbu_coding.graph_analyzer.utils.Props
-import spbu_coding.graph_analyzer.utils.RefreshablePropsHolder
-import spbu_coding.graph_analyzer.utils.SharingPropsFactory
+import spbu_coding.graph_analyzer.utils.PropertySheetItemsHolder
 
-typealias LayoutAlgorithmFactory = SharingPropsFactory<LayoutAlgorithm<*, *>, *>
-
-interface LayoutAlgorithm<out L : VertexLayout, P : Props<P>> : GraphAlgorithm<L, P>
-
-interface GraphAlgorithm<out V, P : Props<P>> : RefreshablePropsHolder<P> {
+interface GraphAlgorithm : PropertySheetItemsHolder {
+    val displayName: String
     val terminated: Boolean
-    val graph: Graph<V>
+    fun reset()
+    fun onInterruption()
+    fun refreshProps()
     fun refreshGraph()
     fun runIteration()
+}
+
+interface GraphAlgorithmCategory {
+    val displayName: String
+    fun createAlgorithms(graph: Graph<Vertex>): List<GraphAlgorithm>
 }

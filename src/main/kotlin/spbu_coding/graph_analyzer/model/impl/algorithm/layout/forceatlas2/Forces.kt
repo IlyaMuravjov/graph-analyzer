@@ -1,4 +1,4 @@
-package spbu_coding.graph_analyzer.model.impl.layout.forceatlas2
+package spbu_coding.graph_analyzer.model.impl.algorithm.layout.forceatlas2
 
 import javafx.geometry.Point2D
 import tornadofx.minus

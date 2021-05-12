@@ -1,9 +1,8 @@
-package spbu_coding.graph_analyzer.model.impl.layout.forceatlas2
+package spbu_coding.graph_analyzer.model.impl.algorithm.layout.forceatlas2
 
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.Vertex
-import spbu_coding.graph_analyzer.utils.Props
-import spbu_coding.graph_analyzer.utils.beanProperty
+import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
 
 data class ForceAtlas2Props(
     var tolerance: Double = 1.0,
@@ -17,7 +16,7 @@ data class ForceAtlas2Props(
     var multithreaded: Boolean,
     var barnesHutApproximation: Boolean,
     var barnesHutTheta: Double = 0.85
-) : Props<ForceAtlas2Props> {
+) : CopyablePropertySheetItemsHolder<ForceAtlas2Props> {
     constructor(graph: Graph<Vertex>) : this(
         scaling = if (graph.vertices.size >= 100) 2.0 else 10.0,
         multithreaded = graph.vertices.size >= 1000,
@@ -39,5 +38,5 @@ data class ForceAtlas2Props(
             beanProperty("barnesHutTheta", "Barnes-Hut theta"),
         )
 
-    override fun copyWritableProps(): ForceAtlas2Props = copy()
+    override fun copyWritableProps() = copy()
 }

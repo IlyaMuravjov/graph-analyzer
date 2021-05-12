@@ -13,7 +13,7 @@ import spbu_coding.graph_analyzer.model.Edge
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.Vertex
 import spbu_coding.graph_analyzer.model.impl.buildGraph
-import spbu_coding.graph_analyzer.utils.beanProperty
+import spbu_coding.graph_analyzer.utils.PropertySheetItemsHolder
 import spbu_coding.graph_analyzer.utils.subPane
 import tornadofx.*
 
@@ -24,7 +24,7 @@ class GraphView(
     private val center = size / 2.0
     val props = GraphViewProps(graph.vertices.size, graph.edges.size)
     val edges = mutableListOf<EdgeView>()
-    val vertices = buildGraph<Vertex, VertexView> {
+    val vertices: Collection<VertexView> = buildGraph<Vertex, VertexView> {
         graph.vertices.forEach { addVertex(it, VertexView(it, props, center)) }
         graph.edges.forEach { edges.add(EdgeView(it, getVertex(it.from), getVertex(it.to), props)) }
     }.vertices
@@ -112,7 +112,7 @@ class VertexView(
 class GraphViewProps(
     val vertexCount: Int,
     val edgeCount: Int
-) {
+) : PropertySheetItemsHolder {
     val vertexLabelsVisibleProperty = booleanProperty(false)
     var vertexLabelsVisible by vertexLabelsVisibleProperty
 
@@ -126,7 +126,7 @@ class GraphViewProps(
     fun edgesRenderedProperty() = edgesRenderedProperty
     var edgesRendered by edgesRenderedProperty
 
-    val propertySheetItems: List<PropertySheet.Item>
+    override val propertySheetItems: List<PropertySheet.Item>
         get() = listOf(
             beanProperty("vertexCount", "Vertices", readOnly = true),
             beanProperty("edgeCount", "Edges", readOnly = true),

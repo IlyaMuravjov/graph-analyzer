@@ -1,21 +1,22 @@
-package spbu_coding.graph_analyzer.model.impl.layout.forceatlas2
+package spbu_coding.graph_analyzer.model.impl.algorithm.layout.forceatlas2
 
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.Vertex
-import spbu_coding.graph_analyzer.model.impl.layout.AbstractLayoutAlgorithm
+import spbu_coding.graph_analyzer.model.impl.algorithm.layout.AbstractLayoutAlgorithm
 import tornadofx.Vector2D
 import tornadofx.plus
 import tornadofx.times
 import kotlin.math.sqrt
 
 class ForceAtlas2(
-    uiGraph: Graph<Vertex>,
-    uiProps: ForceAtlas2Props,
-) : AbstractLayoutAlgorithm<ForceAtlas2Vertex, ForceAtlas2Props>(uiGraph, uiProps) {
+    uiGraph: Graph<Vertex>
+) : AbstractLayoutAlgorithm<ForceAtlas2Vertex, ForceAtlas2Props>("ForceAtlas2", uiGraph, ForceAtlas2Props(uiGraph)) {
     private var temperature = 1.0
     private var temperatureEfficiency = 1.0
 
-    init {
+    override fun reset() {
+        temperature = 1.0
+        temperatureEfficiency = 1.0
         graph.vertices.forEach { it.velocity = Vector2D.ZERO }
     }
 

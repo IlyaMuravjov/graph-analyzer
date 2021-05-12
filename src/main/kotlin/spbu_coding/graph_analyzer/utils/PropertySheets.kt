@@ -6,11 +6,9 @@ import javafx.scene.Node
 import javafx.scene.control.TextField
 import javafx.scene.input.KeyCode
 import org.controlsfx.control.PropertySheet
-import org.controlsfx.property.BeanProperty
 import org.controlsfx.property.editor.PropertyEditor
 import tornadofx.add
 import tornadofx.stringBinding
-import java.beans.PropertyDescriptor
 
 fun EventTarget.propertySheet(items: ObservableList<PropertySheet.Item>) = PropertySheet(items).apply {
     isModeSwitcherVisible = false
@@ -19,19 +17,6 @@ fun EventTarget.propertySheet(items: ObservableList<PropertySheet.Item>) = Prope
     autoUpdateReadOnlyObservableItems()
     this@propertySheet.add(this)
 }
-
-fun Any.beanProperty(name: String, displayName: String = name, readOnly: Boolean = false): PropertySheet.Item =
-    BeanProperty(
-        this,
-        PropertyDescriptor(
-            name,
-            this::class.java,
-            "get${name.capitalize()}",
-            if (readOnly) null else "set${name.capitalize()}"
-        ).apply {
-            this.displayName = displayName
-        }
-    )
 
 fun PropertySheet.updateOnEnter() {
     val oldFactory = propertyEditorFactory

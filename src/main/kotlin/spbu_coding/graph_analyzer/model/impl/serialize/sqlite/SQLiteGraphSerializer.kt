@@ -24,6 +24,7 @@ abstract class AbstractSQLiteGraphSerializer(private val verticesTable: Abstract
     override fun serialize(output: File, graph: Graph<Vertex>) {
         connectToDatabase(output)
         transaction {
+            SchemaUtils.drop(verticesTable, Edges)
             SchemaUtils.create(verticesTable, Edges)
             verticesTable.batchInsert(graph.vertices) { insertVertex(it) }
             Edges.batchInsert(graph.edges) {
