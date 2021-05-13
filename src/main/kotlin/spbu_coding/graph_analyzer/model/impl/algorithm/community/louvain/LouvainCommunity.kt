@@ -3,7 +3,7 @@ package spbu_coding.graph_analyzer.model.impl.algorithm.community.louvain
 import spbu_coding.graph_analyzer.model.VertexCommunity
 import kotlin.math.pow
 
-class LouvainCommunity(private val _id: Int, val name: String? = null) : VertexCommunity {
+class LouvainCommunity(private val _id: Int) : VertexCommunity {
     var superCommunity: LouvainCommunity? = null
     override val id: Int get() = superCommunity?.id ?: _id
     var selfLoopWeight: Double = 0.0
@@ -75,15 +75,11 @@ class LouvainCommunity(private val _id: Int, val name: String? = null) : VertexC
     }
 
     fun wrapInSuperCommunity(id: Int) {
-        superCommunity = LouvainCommunity(id, "s$name").also {
+        superCommunity = LouvainCommunity(id).also {
             it.selfLoopWeight = selfLoopWeight
             it.edges = edges.toMutableMap().apply { put(this@LouvainCommunity, selfLoopWeight) }
             it.outgoingEdgesWeightSum = outgoingEdgesWeightSum
         }
-    }
-
-    override fun toString(): String {
-        return name.toString()
     }
 
     fun weightToVertex(vertex: LouvainCommunity) = edges[vertex] ?: 0.0

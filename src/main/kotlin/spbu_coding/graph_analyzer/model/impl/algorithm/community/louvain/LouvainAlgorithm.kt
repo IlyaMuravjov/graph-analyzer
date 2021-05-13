@@ -16,7 +16,7 @@ class LouvainAlgorithm(
     private var totalEdgeWeight = 0.0
     private lateinit var vertices: Collection<LouvainCommunity>
 
-    override fun getVertexLayout(vertex: Vertex) = LouvainCommunity(nextId++, vertex.name)
+    override fun getVertexLayout(vertex: Vertex) = LouvainCommunity(nextId++)
 
     override fun reset() {
         nextId = 0
@@ -41,15 +41,19 @@ class LouvainAlgorithm(
         do {
             var isModified = false
             for (vertex in vertices.shuffled()) {
-                val bestVertex = vertex.edges.maxByOrNull { (to, _) ->
-                    to.superCommunity!!.computeModularityGainOnInsertion(vertex, totalEdgeWeight) -
+                val bestSuperCommunity = vertex.edges
+                    .map { (to, weight) -> to.superCommunity!! to weight }
+                    .filter { (to, _) -> to != vertex.superCommunity }
+                    .maxByOrNull { (to, _) ->
+                        to.computeModularityGainOnInsertion(vertex, totalEdgeWeight) -
+                                vertex.computeModularityGainOnRemoval(totalEdgeWeight)
+                    }?.first ?: continue
+                val bestCommunityModularity =
+                    bestSuperCommunity.computeModularityGainOnInsertion(vertex, totalEdgeWeight) -
                             vertex.computeModularityGainOnRemoval(totalEdgeWeight)
-                }?.key ?: continue
-                val bestCommunityModularity = bestVertex.superCommunity!!.computeModularityGainOnInsertion(vertex, totalEdgeWeight) -
-                        vertex.computeModularityGainOnRemoval(totalEdgeWeight)
                 if (bestCommunityModularity > 0) {
                     vertex.superCommunity!!.removeVertex(vertex)
-                    bestVertex.superCommunity!!.insertSubCommunity(vertex)
+                    bestSuperCommunity.insertSubCommunity(vertex)
                     isModified = true
                     isModifiedAtAll = true
                 }
