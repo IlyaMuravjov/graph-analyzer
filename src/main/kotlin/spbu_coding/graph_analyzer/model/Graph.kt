@@ -29,7 +29,7 @@ interface VertexLayout {
 }
 
 interface VertexCommunity {
-    var id: Int?
+    val id: Int?
 }
 
 interface VertexCentrality {

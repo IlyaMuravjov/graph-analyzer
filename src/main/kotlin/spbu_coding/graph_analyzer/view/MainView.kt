@@ -2,6 +2,7 @@ package spbu_coding.graph_analyzer.view
 
 import javafx.scene.control.TabPane
 import spbu_coding.graph_analyzer.controller.GraphSerializationController
+import spbu_coding.graph_analyzer.controller.algorithm.CommunityService
 import spbu_coding.graph_analyzer.controller.algorithm.LayoutService
 import spbu_coding.graph_analyzer.model.GraphAnalysisType
 import spbu_coding.graph_analyzer.utils.propertySheet
@@ -25,6 +26,7 @@ class MainView : View() {
                 tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
                 tab("General") { propertySheet(graphView!!.props.propertySheetItems.toObservable()) }
                 tabs.add(GraphAlgorithmCategoryTab(LayoutService(graphView!!)))
+                tabs.add(GraphAlgorithmCategoryTab(CommunityService(graphView)))
             }
         })
         top = menubar {
