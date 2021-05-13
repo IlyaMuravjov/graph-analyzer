@@ -19,6 +19,7 @@ val `junit-jupiter-version`: String by project
 val `testfx-version`: String by project
 val `monocle-version`: String by project
 val `mockk-version`: String by project
+val neo4jDriverVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -31,6 +32,7 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:$`sqlite-jdbc-version`")
     implementation("org.slf4j:slf4j-api:$`slf4j-version`")
     implementation("org.slf4j:slf4j-simple:$`slf4j-version`")
+    implementation("org.neo4j.driver:neo4j-java-driver:$neo4jDriverVersion" )
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$`junit-jupiter-version`")
