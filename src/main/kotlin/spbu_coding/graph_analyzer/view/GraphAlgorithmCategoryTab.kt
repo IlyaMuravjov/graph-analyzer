@@ -10,9 +10,9 @@ class GraphAlgorithmCategoryTab(
     private val service: GraphAlgorithmCategoryService
 ) : Tab(service.category.displayName) {
     init {
-        vbox(ViewConstants.SPACING) {
+        vbox {
             hbox(ViewConstants.SPACING) {
-                padding = ViewConstants.INSETS.copy(bottom = 0.0)
+                padding = ViewConstants.INSETS
                 choicebox(service.algorithmProperty, service.algorithms) {
                     hgrow = Priority.ALWAYS
                     maxWidthProperty().bind(this@hbox.widthProperty())

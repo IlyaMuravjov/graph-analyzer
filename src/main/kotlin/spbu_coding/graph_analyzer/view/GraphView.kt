@@ -26,7 +26,7 @@ class GraphView(
     serializableGraph: Graph<SerializableVertex>,
 ) : Pane() {
     private val size = Point2D(100_000.0, 100_000.0)
-    private val center = size / 2.0
+    val center = size / 2.0
     val props = GraphViewProps(serializableGraph.vertices.size, serializableGraph.edges.size)
     var viewGraph = serializableGraph.map { VertexView(it, props, center) }
     val vertices get() = viewGraph.vertices
