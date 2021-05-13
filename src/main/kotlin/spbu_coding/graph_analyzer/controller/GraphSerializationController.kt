@@ -2,16 +2,18 @@ package spbu_coding.graph_analyzer.controller
 
 import javafx.beans.value.ObservableValue
 import javafx.concurrent.Task
+import javafx.scene.paint.Color
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.GraphAnalysisType
 import spbu_coding.graph_analyzer.model.GraphSerializer
-import spbu_coding.graph_analyzer.model.Vertex
+import spbu_coding.graph_analyzer.model.SerializableVertex
 import spbu_coding.graph_analyzer.model.impl.GraphImpl
-import spbu_coding.graph_analyzer.model.impl.copy
+import spbu_coding.graph_analyzer.model.impl.map
 import spbu_coding.graph_analyzer.model.impl.serialize.fileGraphSerializers
 import spbu_coding.graph_analyzer.utils.addOnFail
 import spbu_coding.graph_analyzer.utils.addOnSuccess
 import spbu_coding.graph_analyzer.utils.runAsyncWithDialog
+import spbu_coding.graph_analyzer.view.GraphView
 import tornadofx.*
 import java.io.File
 
@@ -19,8 +21,11 @@ class GraphSerializationController(private val view: View) : Controller() {
     private val openedGraphSourceProperty = objectProperty<Any?>(null)
     private var openedGraphSource: Any? by openedGraphSourceProperty
 
-    val openedGraphProperty = objectProperty<Graph<Vertex>>(GraphImpl(emptyList(), emptyList()))
-    var openedGraph: Graph<Vertex> by openedGraphProperty
+    val openedGraphProperty = objectProperty<Graph<SerializableVertex>>(GraphImpl(emptyList(), emptyList()))
+    var openedGraph: Graph<SerializableVertex> by openedGraphProperty
+
+    val openedGraphViewProperty = objectProperty<GraphView>()
+    var openedGraphView: GraphView by openedGraphViewProperty
 
     val openedGraphTitleObservableValue: ObservableValue<String?> =
         openedGraphSourceProperty.objectBinding { it?.toString() }
@@ -51,9 +56,11 @@ class GraphSerializationController(private val view: View) : Controller() {
         } ?: throw IllegalArgumentException("Unknown file extension \"${file.extension}\" for $file")
 
     private fun <T> GraphSerializer<T>.saveAsync(output: T, analysisType: GraphAnalysisType): Task<Unit> {
-        val graphCopy = openedGraph.copy()
+        val serializableGraph = openedGraphView.viewGraph.map {
+            SerializableVertex(it.vertex.name, it.pos, it.circle.radius, it.circle.fill as Color)
+        }
         return view.runAsyncWithDialog("Saving $analysisType graph to $output", daemon = false) {
-            serialize(output, graphCopy)
+            serialize(output, serializableGraph)
         } addOnSuccess {
             openedGraphSource = output
         } addOnFail {
@@ -61,7 +68,7 @@ class GraphSerializationController(private val view: View) : Controller() {
         }
     }
 
-    private fun <T> GraphSerializer<T>.loadAsync(input: T, analysisType: GraphAnalysisType): Task<Graph<Vertex>> =
+    private fun <T> GraphSerializer<T>.loadAsync(input: T, analysisType: GraphAnalysisType): Task<Graph<SerializableVertex>> =
         view.runAsyncWithDialog("Loading $analysisType graph from $input", daemon = true) {
             deserialize(input)
         } addOnSuccess {

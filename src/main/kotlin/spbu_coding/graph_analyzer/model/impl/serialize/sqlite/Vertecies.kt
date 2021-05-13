@@ -10,6 +10,10 @@ abstract class AbstractVertices : Table() {
 object NonAnalyzedVertices : AbstractVertices()
 
 object AnalyzedVertices : AbstractVertices() {
-    val community = integer("community").nullable()
-    val centrality = double("centrality").nullable()
+    val x = double("x")
+    val y = double("y")
+    val radius = double("radius")
+    val red = double("red")
+    val green = double("green")
+    val blue = double("blue")
 }

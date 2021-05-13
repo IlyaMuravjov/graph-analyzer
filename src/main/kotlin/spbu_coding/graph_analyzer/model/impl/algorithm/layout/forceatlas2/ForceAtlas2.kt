@@ -35,6 +35,7 @@ class ForceAtlas2(
     }
 
     override fun runIteration() {
+        ensureSafePositions(graph.vertices)
         graph.vertices.forEach {
             it.oldVelocity = it.velocity
             it.velocity = Vector2D.ZERO

@@ -1,5 +1,7 @@
 package spbu_coding.graph_analyzer.model.impl.serialize.sqlite
 
+import javafx.geometry.Point2D
+import javafx.scene.paint.Color
 import javafx.stage.FileChooser.ExtensionFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.BatchInsertStatement
@@ -7,10 +9,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import spbu_coding.graph_analyzer.model.FileGraphSerializer
 import spbu_coding.graph_analyzer.model.Graph
-import spbu_coding.graph_analyzer.model.Vertex
-import spbu_coding.graph_analyzer.model.impl.VertexCentralityImpl
-import spbu_coding.graph_analyzer.model.impl.VertexCommunityImpl
-import spbu_coding.graph_analyzer.model.impl.VertexImpl
+import spbu_coding.graph_analyzer.model.SerializableVertex
 import spbu_coding.graph_analyzer.model.impl.buildGraph
 import java.io.File
 import java.sql.Connection
@@ -18,10 +17,10 @@ import java.sql.Connection
 abstract class AbstractSQLiteGraphSerializer(private val verticesTable: AbstractVertices) : FileGraphSerializer {
     override val extensionFilter = ExtensionFilter("SQLite", "*.sqlite3", "*.sqlite", "*.db")
 
-    protected abstract fun createVertex(it: ResultRow): Vertex
-    protected abstract fun BatchInsertStatement.insertVertex(it: Vertex)
+    protected abstract fun createVertex(it: ResultRow): SerializableVertex
+    protected abstract fun BatchInsertStatement.insertVertex(it: SerializableVertex)
 
-    override fun serialize(output: File, graph: Graph<Vertex>) {
+    override fun serialize(output: File, graph: Graph<SerializableVertex>) {
         connectToDatabase(output)
         transaction {
             SchemaUtils.drop(verticesTable, Edges)
@@ -35,10 +34,10 @@ abstract class AbstractSQLiteGraphSerializer(private val verticesTable: Abstract
         }
     }
 
-    override fun deserialize(input: File): Graph<Vertex> {
+    override fun deserialize(input: File): Graph<SerializableVertex> {
         connectToDatabase(input)
         return transaction {
-            buildGraph<String, Vertex> {
+            buildGraph<String, SerializableVertex> {
                 verticesTable.selectAll().forEach {
                     addVertex(it[verticesTable.name], createVertex(it))
                 }
@@ -55,23 +54,28 @@ abstract class AbstractSQLiteGraphSerializer(private val verticesTable: Abstract
 }
 
 object SQLiteNonAnalyzedGraphSerializer : AbstractSQLiteGraphSerializer(NonAnalyzedVertices) {
-    override fun createVertex(it: ResultRow) = VertexImpl(it[NonAnalyzedVertices.name])
+    override fun createVertex(it: ResultRow) = SerializableVertex(it[NonAnalyzedVertices.name])
 
-    override fun BatchInsertStatement.insertVertex(it: Vertex) {
+    override fun BatchInsertStatement.insertVertex(it: SerializableVertex) {
         this[NonAnalyzedVertices.name] = it.name
     }
 }
 
 object SQLiteAnalyzedGraphSerializer : AbstractSQLiteGraphSerializer(AnalyzedVertices) {
-    override fun createVertex(it: ResultRow) = VertexImpl(
+    override fun createVertex(it: ResultRow) = SerializableVertex(
         name = it[AnalyzedVertices.name],
-        community = VertexCommunityImpl(it[AnalyzedVertices.community]),
-        centrality = VertexCentralityImpl(it[AnalyzedVertices.centrality])
+        pos = Point2D(it[AnalyzedVertices.x], it[AnalyzedVertices.y]),
+        radius = it[AnalyzedVertices.radius],
+        color = Color(it[AnalyzedVertices.red], it[AnalyzedVertices.green], it[AnalyzedVertices.blue], 1.0)
     )
 
-    override fun BatchInsertStatement.insertVertex(it: Vertex) {
+    override fun BatchInsertStatement.insertVertex(it: SerializableVertex) {
         this[AnalyzedVertices.name] = it.name
-        this[AnalyzedVertices.community] = it.community.id
-        this[AnalyzedVertices.centrality] = it.centrality.value
+        this[AnalyzedVertices.x] = it.pos.x
+        this[AnalyzedVertices.y] = it.pos.y
+        this[AnalyzedVertices.radius] = it.radius
+        this[AnalyzedVertices.red] = it.color.red
+        this[AnalyzedVertices.green] = it.color.green
+        this[AnalyzedVertices.blue] = it.color.blue
     }
 }

@@ -24,7 +24,6 @@ class LayoutService(
     private var uiUpdateRequested = true
 
     init {
-        toggle()
         toggledObservableValue.onChange {
             if (!it) {
                 lastSecondIterationsMillis.clear()

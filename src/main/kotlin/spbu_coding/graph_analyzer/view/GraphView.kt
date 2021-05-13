@@ -13,23 +13,28 @@ import org.controlsfx.control.PropertySheet
 import spbu_coding.graph_analyzer.controller.EdgeRenderingController
 import spbu_coding.graph_analyzer.model.Edge
 import spbu_coding.graph_analyzer.model.Graph
+import spbu_coding.graph_analyzer.model.SerializableVertex
 import spbu_coding.graph_analyzer.model.Vertex
+import spbu_coding.graph_analyzer.model.impl.VertexImpl
 import spbu_coding.graph_analyzer.model.impl.buildGraph
+import spbu_coding.graph_analyzer.model.impl.map
 import spbu_coding.graph_analyzer.utils.PropertySheetItemsHolder
 import spbu_coding.graph_analyzer.utils.subPane
 import tornadofx.*
 
 class GraphView(
-    val graph: Graph<Vertex>,
+    serializableGraph: Graph<SerializableVertex>,
 ) : Pane() {
     private val size = Point2D(100_000.0, 100_000.0)
     private val center = size / 2.0
-    val props = GraphViewProps(graph.vertices.size, graph.edges.size)
+    val props = GraphViewProps(serializableGraph.vertices.size, serializableGraph.edges.size)
+    var viewGraph = serializableGraph.map { VertexView(it, props, center) }
+    val vertices get() = viewGraph.vertices
     val edges = mutableListOf<EdgeView>()
-    val vertices: Collection<VertexView> = buildGraph<Vertex, VertexView> {
-        graph.vertices.forEach { addVertex(it, VertexView(it, props, center)) }
-        graph.edges.forEach { edges.add(EdgeView(it, getVertex(it.from), getVertex(it.to), props)) }
-    }.vertices
+    val graph = buildGraph<VertexView, Vertex> {
+        viewGraph.vertices.forEach { addVertex(it, it.vertex) }
+        viewGraph.edges.forEach { edges.add(EdgeView(addEdge(it.from, it.to, it.weight), it.from, it.to, props)) }
+    }
     var vertexPane: Pane
 
     init {
@@ -93,10 +98,18 @@ class EdgeView(
 }
 
 class VertexView(
-    val vertex: Vertex,
+    serializableVertex: SerializableVertex,
     val props: GraphViewProps,
     val graphCenter: Point2D
 ) : Group() {
+    val vertex = VertexImpl(serializableVertex.name)
+    val circle = Circle(
+        serializableVertex.pos.x + graphCenter.x,
+        serializableVertex.pos.y + graphCenter.y,
+        serializableVertex.radius,
+        serializableVertex.color
+    )
+
     var lastDraggedMillis = 0L
     var pos: Point2D
         get() = Point2D(circle.centerX, circle.centerY) - graphCenter
@@ -104,8 +117,6 @@ class VertexView(
             circle.centerX = value.x + graphCenter.x
             circle.centerY = value.y + graphCenter.y
         }
-
-    val circle = Circle(7.0, Color.LIGHTGRAY)
 
     val outline: Shape = Circle().also {
         it.fill = Color.BLACK

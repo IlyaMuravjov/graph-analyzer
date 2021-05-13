@@ -9,5 +9,5 @@ import spbu_coding.graph_analyzer.model.impl.algorithm.layout.random.RandomLayou
 object LayoutAlgorithmCategory : GraphAlgorithmCategory {
     override val displayName get() = "Layout"
 
-    override fun createAlgorithms(graph: Graph<Vertex>) = listOf(RandomLayoutAlgorithm(graph), ForceAtlas2(graph))
+    override fun createAlgorithms(graph: Graph<Vertex>) = listOf(ForceAtlas2(graph), RandomLayoutAlgorithm(graph))
 }

@@ -11,17 +11,17 @@ import tornadofx.*
 
 class MainView : View() {
     private val serializationController = GraphSerializationController(this)
-    private val graphProperty = serializationController.openedGraphProperty.objectBinding { GraphView(it!!) }
+    private val graphViewProperty = serializationController.openedGraphProperty.objectBinding { GraphView(it!!) }
 
     override val root = borderpane {
-        centerProperty().bind(graphProperty.objectBinding { graphView ->
+        centerProperty().bind(graphViewProperty.objectBinding { graphView ->
             zoomScrollPane(graphView!!, scaleValue = 0.3) {
                 style += "-fx-focus-color: transparent;"
                 hvalue = (hmin + hmax) / 2
                 vvalue = (vmin + vmax) / 2
             }
         })
-        leftProperty().bind(graphProperty.objectBinding { graphView ->
+        leftProperty().bind(graphViewProperty.objectBinding { graphView ->
             tabpane {
                 tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
                 tab("General") { propertySheet(graphView!!.props.propertySheetItems.toObservable()) }
@@ -46,6 +46,7 @@ class MainView : View() {
     }
 
     init {
+        serializationController.openedGraphViewProperty.bind(graphViewProperty)
         titleProperty.bind(serializationController.openedGraphTitleObservableValue
             .stringBinding { listOfNotNull("Graph analyzer", it).joinToString(" - ") })
     }
