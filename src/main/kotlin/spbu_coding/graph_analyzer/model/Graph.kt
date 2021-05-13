@@ -5,6 +5,7 @@ import javafx.geometry.Point2D
 const val MAX_VERTEX_NAME_LENGTH = 50
 
 interface Graph<out V> {
+    val lastModified: Long
     val vertices: Collection<V>
     val edges: Collection<Edge<V>>
 }

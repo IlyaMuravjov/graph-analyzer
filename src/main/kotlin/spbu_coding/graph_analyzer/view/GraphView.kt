@@ -1,10 +1,12 @@
 package spbu_coding.graph_analyzer.view
 
 import javafx.geometry.Point2D
+import javafx.scene.Group
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
+import javafx.scene.shape.Shape
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 import org.controlsfx.control.PropertySheet
@@ -28,6 +30,7 @@ class GraphView(
         graph.vertices.forEach { addVertex(it, VertexView(it, props, center)) }
         graph.edges.forEach { edges.add(EdgeView(it, getVertex(it.from), getVertex(it.to), props)) }
     }.vertices
+    var vertexPane: Pane
 
     init {
         minWidth = size.x
@@ -36,7 +39,7 @@ class GraphView(
             props.edgesRenderedProperty.bind(edgesRenderedObservableValue)
             prefEdgesRenderedProperty.bind(props.prefEdgesRenderedProperty)
         }
-        subPane { children.addAll(vertices) }
+        vertexPane = subPane { children.addAll(vertices) }
         subPane {
             visibleWhen(props.vertexLabelsVisibleProperty)
             children.addAll(vertices.map { it.label })
@@ -74,10 +77,10 @@ class EdgeView(
         }
 
         fun bindProperties() {
-            startXProperty().bind(from.centerXProperty())
-            startYProperty().bind(from.centerYProperty())
-            endXProperty().bind(to.centerXProperty())
-            endYProperty().bind(to.centerYProperty())
+            startXProperty().bind(from.circle.centerXProperty())
+            startYProperty().bind(from.circle.centerYProperty())
+            endXProperty().bind(to.circle.centerXProperty())
+            endYProperty().bind(to.circle.centerYProperty())
         }
 
         fun unbindProperties() {
@@ -93,19 +96,33 @@ class VertexView(
     val vertex: Vertex,
     val props: GraphViewProps,
     val graphCenter: Point2D
-) : Circle(7.0, Color.DARKGRAY) {
+) : Group() {
     var lastDraggedMillis = 0L
     var pos: Point2D
-        get() = Point2D(centerX, centerY) - graphCenter
+        get() = Point2D(circle.centerX, circle.centerY) - graphCenter
         set(value) {
-            centerX = value.x + graphCenter.x
-            centerY = value.y + graphCenter.y
+            circle.centerX = value.x + graphCenter.x
+            circle.centerY = value.y + graphCenter.y
         }
 
+    val circle = Circle(7.0, Color.LIGHTGRAY)
+
+    val outline: Shape = Circle().also {
+        it.fill = Color.BLACK
+        it.centerXProperty().bind(circle.centerXProperty())
+        it.centerYProperty().bind(circle.centerYProperty())
+        it.radiusProperty().bind(circle.radiusProperty() + 2.0)
+    }
+
+    init {
+        add(outline)
+        add(circle)
+    }
+
     val label = Text(vertex.name).apply {
-        fontProperty().bind(radiusProperty().objectBinding { Font(2.0 * it!!.toDouble()) })
-        xProperty().bind(centerXProperty() - layoutBounds.width / 2)
-        yProperty().bind(centerYProperty() + radiusProperty() + layoutBounds.height)
+        fontProperty().bind(circle.radiusProperty().objectBinding { Font(2.0 * it!!.toDouble()) })
+        xProperty().bind(circle.centerXProperty() - layoutBounds.width / 2)
+        yProperty().bind(circle.centerYProperty() + circle.radiusProperty() + layoutBounds.height)
     }
 }
 

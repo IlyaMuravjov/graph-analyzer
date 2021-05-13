@@ -1,6 +1,5 @@
 package spbu_coding.graph_analyzer.controller.algorithm
 
-import javafx.concurrent.Task
 import spbu_coding.graph_analyzer.model.impl.algorithm.layout.LayoutAlgorithmCategory
 import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
 import spbu_coding.graph_analyzer.utils.millisSince
@@ -39,15 +38,15 @@ class LayoutService(
             if (lastFrameMillis == 0L) lastFrameMillis = System.currentTimeMillis()
             graphView.vertices.forEach {
                 it.vertex.layout.pos = it.pos
-                it.vertex.layout.radius = it.radius
+                it.vertex.layout.radius = it.circle.radius
             }
             super.refreshGraph()
         }
     }
 
-    override fun Task<Unit>.runIterations() {
+    override fun runIterations() {
         do {
-            if (isCancelled) return
+            if (pendingStopRequest) return
             lastSecondIterationsMillis.add(System.currentTimeMillis())
             algorithm.runIteration()
         } while (millisSince(lastFrameMillis) < props.minMillisPerPropsUpdate)

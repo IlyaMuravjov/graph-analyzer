@@ -6,7 +6,6 @@ interface GraphAlgorithm : PropertySheetItemsHolder {
     val displayName: String
     val terminated: Boolean
     fun reset()
-    fun onInterruption()
     fun refreshProps()
     fun refreshGraph()
     fun runIteration()

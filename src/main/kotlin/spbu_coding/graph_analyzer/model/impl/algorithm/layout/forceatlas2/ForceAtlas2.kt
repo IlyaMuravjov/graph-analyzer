@@ -13,18 +13,20 @@ class ForceAtlas2(
 ) : AbstractLayoutAlgorithm<ForceAtlas2Vertex, ForceAtlas2Props>("ForceAtlas2", uiGraph, ForceAtlas2Props(uiGraph)) {
     private var temperature = 1.0
     private var temperatureEfficiency = 1.0
+    private var graph = adaptedGraph()
 
     override fun reset() {
         temperature = 1.0
         temperatureEfficiency = 1.0
         graph.vertices.forEach { it.velocity = Vector2D.ZERO }
+        super.reset()
     }
 
     override fun getVertexLayout(vertex: Vertex): ForceAtlas2Vertex =
         (vertex.layout as? ForceAtlas2Vertex) ?: ForceAtlas2Vertex(vertex.layout)
 
     override fun refreshGraph() {
-        super.refreshGraph()
+        graph = adaptedGraph()
         graph.vertices.forEach { it.mass = 1.0 }
         graph.edges.forEach {
             it.from.mass++

@@ -15,6 +15,8 @@ interface GraphAlgorithmCategoryService {
     val algorithm: GraphAlgorithm
     val toggledObservableValue: ObservableValue<Boolean>
     val toggled: Boolean
+    val terminatedObservableValue: ObservableValue<Boolean>
+    val terminated: Boolean
     val observablePropertySheetItems: ObservableList<PropertySheet.Item>
 
     fun toggle()

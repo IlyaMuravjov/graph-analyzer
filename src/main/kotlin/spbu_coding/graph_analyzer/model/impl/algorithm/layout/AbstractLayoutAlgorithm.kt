@@ -6,7 +6,7 @@ import spbu_coding.graph_analyzer.model.VertexLayout
 import spbu_coding.graph_analyzer.model.impl.algorithm.AbstractGraphAlgorithm
 import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
 
-abstract class AbstractLayoutAlgorithm<L : VertexLayout, P : CopyablePropertySheetItemsHolder<P>>(
+abstract class AbstractLayoutAlgorithm<out L : VertexLayout, P : CopyablePropertySheetItemsHolder<P>>(
     displayName: String,
     uiGraph: Graph<Vertex>,
     uiProps: P

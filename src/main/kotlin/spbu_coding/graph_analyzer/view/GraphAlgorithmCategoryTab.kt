@@ -11,8 +11,8 @@ class GraphAlgorithmCategoryTab(
 ) : Tab(service.category.displayName) {
     init {
         vbox(ViewConstants.SPACING) {
-            padding = ViewConstants.INSETS
             hbox(ViewConstants.SPACING) {
+                padding = ViewConstants.INSETS.copy(bottom = 0.0)
                 choicebox(service.algorithmProperty, service.algorithms) {
                     hgrow = Priority.ALWAYS
                     maxWidthProperty().bind(this@hbox.widthProperty())
@@ -22,7 +22,13 @@ class GraphAlgorithmCategoryTab(
                     action {
                         service.toggle()
                     }
-                    textProperty().bind(service.toggledObservableValue.stringBinding { if (it!!) "Stop" else "Run" })
+                    textProperty().bind(service.toggledObservableValue.stringBinding(service.terminatedObservableValue) {
+                        when {
+                            service.toggled -> "Stop"
+                            service.terminated -> "Rerun"
+                            else -> "Run"
+                        }
+                    })
                 }
             }
             propertySheet(service.observablePropertySheetItems)

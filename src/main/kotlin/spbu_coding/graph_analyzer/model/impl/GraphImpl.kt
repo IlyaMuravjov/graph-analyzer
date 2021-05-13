@@ -28,7 +28,9 @@ class GraphBuilder<in K, V> {
     fun build(): Graph<V> = GraphImpl(vertices.values.toList(), edges.toList())
 }
 
-data class GraphImpl<out V>(override val vertices: Collection<V>, override val edges: Collection<Edge<V>>) : Graph<V>
+data class GraphImpl<out V>(override val vertices: Collection<V>, override val edges: Collection<Edge<V>>) : Graph<V> {
+    override val lastModified: Long = System.currentTimeMillis()
+}
 
 data class EdgeImpl<out V>(override val from: V, override val to: V, override val weight: Double) : Edge<V>
 
