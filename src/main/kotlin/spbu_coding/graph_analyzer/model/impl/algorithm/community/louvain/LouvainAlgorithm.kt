@@ -38,6 +38,7 @@ class LouvainAlgorithm(
     override fun runIteration() {
         vertices.forEach { it.wrapInSuperCommunity(nextId++) }
         var isModifiedAtAll = false
+        var iterations = 0
         do {
             var isModified = false
             for (vertex in vertices.shuffled()) {
@@ -58,7 +59,7 @@ class LouvainAlgorithm(
                     isModifiedAtAll = true
                 }
             }
-        } while (isModified)
+        } while (isModified && iterations++ < 100)
         vertices = vertices.mapTo(mutableSetOf()) { it.superCommunity!! }.onEach { it.condensateEdges() }
         terminated = !isModifiedAtAll
     }

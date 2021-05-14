@@ -1,6 +1,7 @@
 package spbu_coding.graph_analyzer.controller.algorithm
 
 import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import org.controlsfx.control.PropertySheet
 import spbu_coding.graph_analyzer.model.impl.algorithm.community.CommunityAlgorithmCategory
 import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
@@ -19,14 +20,18 @@ class CommunityService(
     override fun pausesBetweenIterations() = props.pauseBetweenIterations
 
     override fun refreshView() {
-        val communities = graphView.vertices
+        val random = Random(COMMUNITY_COLOR_RANDOM_SEED)
+        val usedPaints = mutableSetOf<Paint>()
+        graphView.vertices
             .groupBy { it.vertex.community.id }.values
             .sortedByDescending { it.size }
-        val random = Random(COMMUNITY_COLOR_RANDOM_SEED)
-        communities.asSequence()
-            .zip(sequenceOf(Color.LIGHTGRAY) +
-                    generateSequence { Color(random.nextDouble(), random.nextDouble(), random.nextDouble(), 1.0) })
-            .forEach { (community, color) -> community.forEach { it.circle.fill = color } }
+            .forEach { community ->
+                var paint = community.map { it.circle.fill }.groupBy { it }.values.maxByOrNull { it.size }!!.first()
+                if (paint in usedPaints)
+                    paint = Color.color(random.nextDouble(), random.nextDouble(), random.nextDouble())
+                else usedPaints.add(paint)
+                community.forEach { it.circle.fill = paint }
+            }
     }
 }
 
