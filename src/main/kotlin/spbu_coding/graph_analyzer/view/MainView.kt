@@ -1,11 +1,11 @@
 package spbu_coding.graph_analyzer.view
 
 import javafx.scene.control.TabPane
+import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import spbu_coding.graph_analyzer.controller.GraphSerializationController
 import spbu_coding.graph_analyzer.controller.algorithm.CommunityService
 import spbu_coding.graph_analyzer.controller.algorithm.LayoutService
-import spbu_coding.graph_analyzer.model.GraphAnalysisType
 import spbu_coding.graph_analyzer.utils.propertySheet
 import spbu_coding.graph_analyzer.utils.zoomScrollPane
 import tornadofx.*
@@ -54,15 +54,17 @@ class MainView : View() {
         })
         top = menubar {
             menu("File") {
-                GraphAnalysisType.values().forEach { analysisType ->
-                    item("Open $analysisType") {
-                        action { serializationController.openFile(analysisType) }
-                    }
+                item("Open", KeyCombination.valueOf("Shortcut+O")) {
+                    action { serializationController.openFile() }
                 }
-                GraphAnalysisType.values().forEach { analysisType ->
-                    item("Save $analysisType as") {
-                        action { serializationController.saveAsFile(analysisType) }
-                    }
+                item("Save as", KeyCombination.valueOf("Shortcut+S")) {
+                    action { serializationController.saveAsFile() }
+                }
+                item("Load from Neo4j") {
+                    action { serializationController.loadFromNeo4j() }
+                }
+                item("Save to Neo4j") {
+                    action { serializationController.saveToNeo4j() }
                 }
             }
         }
