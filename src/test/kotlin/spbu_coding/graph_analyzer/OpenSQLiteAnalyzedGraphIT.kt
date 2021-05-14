@@ -25,10 +25,10 @@ class OpenSQLiteAnalyzedGraphIT : ApplicationTest() {
     fun `when SQLite analyzed graph is opened then then displayed graph properties should be updated`() {
         mockkStatic(::chooseFile)
         every {
-            chooseFile("Open analyzed", any(), any(), FileChooserMode.Single, any(), any())
+            chooseFile("Open", any(), any(), FileChooserMode.Single, any(), any())
         } returns listOf(File(javaClass.getResource("/analyzed-graph-sample.sqlite3").file))
         clickOn("File")
-        clickOn("Open analyzed")
+        clickOn("Open")
         waitFor(10L, TimeUnit.SECONDS) {
             val items = lookup(".property-sheet").queryAll<PropertySheet>().flatMap { it.items }
             val vertices = items.find { it.name == "Vertices" }?.value
