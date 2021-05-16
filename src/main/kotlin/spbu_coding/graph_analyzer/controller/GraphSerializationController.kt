@@ -1,27 +1,23 @@
 package spbu_coding.graph_analyzer.controller
 
-import javafx.beans.value.ObservableValue
+import javafx.beans.property.ReadOnlyProperty
 import javafx.concurrent.Task
-import javafx.geometry.Pos
-import javafx.scene.control.PasswordField
-import javafx.scene.paint.Color
-import org.controlsfx.control.PropertySheet
-import org.controlsfx.property.editor.AbstractPropertyEditor
-import org.controlsfx.property.editor.PropertyEditor
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.GraphSerializer
 import spbu_coding.graph_analyzer.model.SerializableVertex
 import spbu_coding.graph_analyzer.model.impl.GraphImpl
 import spbu_coding.graph_analyzer.model.impl.map
+import spbu_coding.graph_analyzer.model.impl.serialize.SerializableVertexImpl
 import spbu_coding.graph_analyzer.model.impl.serialize.fileGraphSerializers
-import spbu_coding.graph_analyzer.model.impl.serialize.neo4j.Neo4jConnectionData
 import spbu_coding.graph_analyzer.model.impl.serialize.neo4j.Neo4jGraphSerializer
-import spbu_coding.graph_analyzer.utils.*
+import spbu_coding.graph_analyzer.utils.addOnFail
+import spbu_coding.graph_analyzer.utils.addOnSuccess
+import spbu_coding.graph_analyzer.utils.runAsyncWithDialog
+import spbu_coding.graph_analyzer.utils.toReadOnlyProperty
 import spbu_coding.graph_analyzer.view.GraphView
-import spbu_coding.graph_analyzer.view.ViewConstants
+import spbu_coding.graph_analyzer.view.requestNeo4jCredentials
 import tornadofx.*
 import java.io.File
-import java.util.*
 
 class GraphSerializationController(private val view: View) : Controller() {
     private val openedGraphSourceProperty = objectProperty<Any?>(null)
@@ -33,9 +29,9 @@ class GraphSerializationController(private val view: View) : Controller() {
     val openedGraphViewProperty = objectProperty<GraphView>()
     var openedGraphView: GraphView by openedGraphViewProperty
 
-    val openedGraphTitleObservableValue: ObservableValue<String?> =
-        openedGraphSourceProperty.objectBinding { it?.toString() }
-    val openedGraphTitle: String? by openedGraphTitleObservableValue
+    val openedGraphTitleProperty: ReadOnlyProperty<String?> =
+        openedGraphSourceProperty.objectBinding { it?.toString() }.toReadOnlyProperty()
+    val openedGraphTitle: String? by openedGraphTitleProperty
 
     fun openFile() {
         val file = chooseGraphFile("Open", FileChooserMode.Single) ?: return
@@ -51,49 +47,31 @@ class GraphSerializationController(private val view: View) : Controller() {
         chooseFile(
             title = title,
             filters = fileGraphSerializers().map { it.extensionFilter }.toTypedArray(),
-            initialDirectory = (openedGraphSource as? File)?.parentFile ?: defaultSaveDirectory(),
+            initialDirectory = (openedGraphSource as? File)?.parentFile ?: defaultGraphDirectory(),
             mode = mode,
             owner = view.currentWindow
         ).firstOrNull()
 
-    fun loadFromNeo4j() = chooseNeo4jConnectionData("Load from Neo4j") {
-        Neo4jGraphSerializer.loadAsync(it)
-    }
-
-    fun saveToNeo4j() = chooseNeo4jConnectionData("Save to Neo4j") {
-        Neo4jGraphSerializer.saveAsync(it)
-    }
-
-    private fun chooseNeo4jConnectionData(title: String, op: (Neo4jConnectionData) -> Unit) {
-        val props = Neo4jConnectionProps()
-        view.builderWindow(title = title) {
-            vbox(ViewConstants.SPACING) {
-                propertySheet(props.propertySheetItems.toObservable())
-                hbox(ViewConstants.SPACING) {
-                    padding = ViewConstants.INSETS.copy(top = 0.0)
-                    alignment = Pos.CENTER
-                    button("  OK  ") {
-                        action {
-                            this@builderWindow.close()
-                            op(Neo4jConnectionData(props.uri, props.username, props.password))
-                        }
-                    }
-                    button("Cancel") {
-                        action { this@builderWindow.close() }
-                    }
-                }
-            }
-        }
-    }
+    private fun defaultGraphDirectory() = runCatching {
+        File("${System.getProperty("user.home")}/Documents/graph-analyzer").takeIf { it.isDirectory || it.mkdirs() }
+    }.getOrNull()
 
     private fun findFileGraphSerializer(file: File) =
         fileGraphSerializers().find { serializer ->
             serializer.extensionFilter.extensions.any { file.path.endsWith(it.drop(1)) }
         } ?: throw IllegalArgumentException("Unknown file extension \"${file.extension}\" for $file")
 
+    fun loadFromNeo4j() = requestNeo4jCredentials("Load from Neo4j", view.currentWindow) {
+        Neo4jGraphSerializer.loadAsync(it)
+    }
+
+    fun saveToNeo4j() = requestNeo4jCredentials("Save to Neo4j", view.currentWindow) {
+        Neo4jGraphSerializer.saveAsync(it)
+    }
+
     private fun <T> GraphSerializer<T>.saveAsync(output: T): Task<Unit> {
         val serializableGraph = openedGraphView.viewGraph.map {
-            SerializableVertex(it.vertex.name, it.pos, it.circle.radius, it.circle.fill as Color)
+            SerializableVertexImpl(it.vertex.id, it.pos, it.radius, it.color)
         }
         return view.runAsyncWithDialog("Saving graph to $output", daemon = false) {
             serialize(output, serializableGraph)
@@ -113,35 +91,4 @@ class GraphSerializationController(private val view: View) : Controller() {
         } addOnFail {
             throw RuntimeException("Unable to load graph from $input", it)
         }
-
-    private fun defaultSaveDirectory() = runCatching {
-        File("${System.getProperty("user.home")}/Documents/graph-analyzer").takeIf { it.isDirectory || it.mkdirs() }
-    }.getOrNull()
-}
-
-data class Neo4jConnectionProps(
-    var uri: String = "",
-    var username: String = "",
-    var password: String = ""
-) : PropertySheetItemsHolder {
-    override val propertySheetItems = listOf(
-        beanProperty("uri", "URI"),
-        beanProperty("username", "Username"),
-        beanProperty("password", "Password").let {
-            object : PropertySheet.Item by it {
-                override fun getPropertyEditorClass(): Optional<Class<out PropertyEditor<*>>> =
-                    Optional.of(PasswordEditor::class.java)
-            }
-        }
-    )
-}
-
-class PasswordEditor(
-    item: PropertySheet.Item
-) : AbstractPropertyEditor<String, PasswordField>(item, PasswordField()) {
-    override fun setValue(value: String?) {
-        editor.text = value.toString()
-    }
-
-    override fun getObservableValue(): ObservableValue<String> = editor.textProperty()
 }

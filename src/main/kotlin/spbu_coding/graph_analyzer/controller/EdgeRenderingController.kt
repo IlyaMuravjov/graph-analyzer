@@ -1,6 +1,6 @@
 package spbu_coding.graph_analyzer.controller
 
-import javafx.beans.value.ObservableValue
+import javafx.beans.property.ReadOnlyLongProperty
 import javafx.scene.layout.Pane
 import spbu_coding.graph_analyzer.utils.onNull
 import spbu_coding.graph_analyzer.utils.plus
@@ -23,14 +23,14 @@ class EdgeRenderingController(
     val prefEdgesRenderedProperty = longProperty(0)
     var prefEdgesRendered by prefEdgesRenderedProperty
 
-    private val prefPanesRenderedObservableValue = prefEdgesRenderedProperty.longBinding {
+    private val prefPanesRenderedBinding = prefEdgesRenderedProperty.longBinding {
         prefEdgesRendered / EDGES_PER_PANE + if (prefEdgesRendered % EDGES_PER_PANE == 0L) 0 else 1
     }.onChange { renderEdges() }
-    private val prefPanesRendered by prefPanesRenderedObservableValue
+    private val prefPanesRendered by prefPanesRenderedBinding
 
-    private val edgesRenderedProperty = longProperty(0)
-    val edgesRenderedObservableValue: ObservableValue<Number> = edgesRenderedProperty
-    var edgesRendered by edgesRenderedProperty
+    private val _edgesRenderedProperty = longProperty(0)
+    val edgesRenderedProperty: ReadOnlyLongProperty = _edgesRenderedProperty
+    var edgesRendered by _edgesRenderedProperty
         private set
 
     private var isRunning = false

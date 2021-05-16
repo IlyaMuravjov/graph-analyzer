@@ -16,19 +16,11 @@ class GraphAlgorithmCategoryTab(
                 choicebox(service.algorithmProperty, service.algorithms) {
                     hgrow = Priority.ALWAYS
                     maxWidthProperty().bind(this@hbox.widthProperty())
-                    disableWhen(service.toggledObservableValue)
+                    disableWhen(service.stateProperty.booleanBinding { it == GraphAlgorithmCategoryService.State.RUNNING })
                 }
                 button {
-                    action {
-                        service.toggle()
-                    }
-                    textProperty().bind(service.toggledObservableValue.stringBinding(service.terminatedObservableValue) {
-                        when {
-                            service.toggled -> "Stop"
-                            service.terminated -> "Rerun"
-                            else -> "Run"
-                        }
-                    })
+                    action { service.toggle() }
+                    textProperty().bind(service.stateProperty.stringBinding { it?.actionName })
                 }
             }
             propertySheet(service.observablePropertySheetItems)

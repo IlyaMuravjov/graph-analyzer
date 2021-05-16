@@ -1,27 +1,29 @@
 package spbu_coding.graph_analyzer.model.impl.algorithm.community.louvain
 
+import javafx.concurrent.Task
 import spbu_coding.graph_analyzer.model.Graph
+import spbu_coding.graph_analyzer.model.GraphAlgorithm
 import spbu_coding.graph_analyzer.model.Vertex
 import spbu_coding.graph_analyzer.model.impl.algorithm.community.AbstractCommunityAlgorithm
-import spbu_coding.graph_analyzer.utils.EmptyPropertySheetItemsHolder
+import spbu_coding.graph_analyzer.utils.EmptyProps
 
 class LouvainAlgorithm(
     uiGraph: Graph<Vertex>
-) : AbstractCommunityAlgorithm<LouvainCommunity, EmptyPropertySheetItemsHolder>(
+) : AbstractCommunityAlgorithm<LouvainCommunity, EmptyProps>(
     "Louvain method",
     uiGraph,
-    EmptyPropertySheetItemsHolder
+    EmptyProps
 ) {
     private var nextId = 0
     private var totalEdgeWeight = 0.0
     private lateinit var vertices: Collection<LouvainCommunity>
 
-    override fun getVertexLayout(vertex: Vertex) = LouvainCommunity(nextId++)
+    override fun getVertexCommunity(vertex: Vertex) = LouvainCommunity(nextId++)
 
     override fun reset() {
         nextId = 0
         totalEdgeWeight = 0.0
-        val graph = adaptedGraph()
+        val graph = communityGraph()
         vertices = graph.vertices
         graph.edges.forEach { edge ->
             edge.from.connectTo(edge.to, edge.weight)
@@ -32,10 +34,10 @@ class LouvainAlgorithm(
     }
 
     override fun refreshGraph() {
-        if (uiGraph.lastModified > lastReset) reset()
+        if (uiGraph.lastModifiedMillis > lastResetMillis) reset()
     }
 
-    override fun runIteration() {
+    override fun runIteration(task: Task<GraphAlgorithm.IterationResult>): GraphAlgorithm.IterationResult {
         vertices.forEach { it.wrapInSuperCommunity(nextId++) }
         var isModifiedAtAll = false
         var iterations = 0
@@ -61,6 +63,6 @@ class LouvainAlgorithm(
             }
         } while (isModified && iterations++ < 100)
         vertices = vertices.mapTo(mutableSetOf()) { it.superCommunity!! }.onEach { it.condensateEdges() }
-        terminated = !isModifiedAtAll
+        return if (isModifiedAtAll) GraphAlgorithm.IterationResult.UNFINISHED else GraphAlgorithm.IterationResult.TERMINATED
     }
 }

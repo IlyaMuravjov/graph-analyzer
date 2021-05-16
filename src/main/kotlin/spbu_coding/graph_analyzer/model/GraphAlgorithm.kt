@@ -1,14 +1,23 @@
 package spbu_coding.graph_analyzer.model
 
-import spbu_coding.graph_analyzer.utils.PropertySheetItemsHolder
+import javafx.concurrent.Task
+import spbu_coding.graph_analyzer.utils.PropsHolder
 
-interface GraphAlgorithm : PropertySheetItemsHolder {
+interface GraphAlgorithm : PropsHolder {
     val displayName: String
-    val terminated: Boolean
     fun reset()
-    fun refreshProps()
+    fun fixAfterInterruption(): IterationResult
+    fun refreshInputProps()
     fun refreshGraph()
-    fun runIteration()
+    fun runIteration(task: Task<IterationResult>): IterationResult
+    fun updateOutputProps()
+    override fun toString(): String
+
+    enum class IterationResult {
+        UNFINISHED,
+        PAUSED,
+        TERMINATED
+    }
 }
 
 interface GraphAlgorithmCategory {

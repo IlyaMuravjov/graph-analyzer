@@ -5,7 +5,7 @@ import javafx.geometry.Point2D
 const val MAX_VERTEX_NAME_LENGTH = 50
 
 interface Graph<out V> {
-    val lastModified: Long
+    val lastModifiedMillis: Long
     val vertices: Collection<V>
     val edges: Collection<Edge<V>>
 }
@@ -17,7 +17,7 @@ interface Edge<out V> {
 }
 
 interface Vertex {
-    val name: String
+    val id: String
     var layout: VertexLayout
     var community: VertexCommunity
     var centrality: VertexCentrality
@@ -33,5 +33,5 @@ interface VertexCommunity {
 }
 
 interface VertexCentrality {
-    var value: Double?
+    val value: Double?
 }

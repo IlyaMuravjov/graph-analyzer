@@ -1,53 +1,30 @@
 package spbu_coding.graph_analyzer.model.impl.algorithm
 
-import javafx.geometry.Point2D
-import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.GraphAlgorithm
-import spbu_coding.graph_analyzer.model.Vertex
-import spbu_coding.graph_analyzer.model.VertexLayout
-import spbu_coding.graph_analyzer.model.impl.map
-import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
-import spbu_coding.graph_analyzer.utils.PropertySheetItemsHolder
-import kotlin.random.Random
+import spbu_coding.graph_analyzer.utils.CopyablePropsHolder
+import spbu_coding.graph_analyzer.utils.PropsHolder
 
-const val DEFAULT_MAX_RANDOM_COORDINATE_DEVIATION = 100.0
-
-abstract class AbstractGraphAlgorithm<out V, P : CopyablePropertySheetItemsHolder<P>>(
+abstract class AbstractGraphAlgorithm<out V, P : CopyablePropsHolder<P>>(
     override val displayName: String,
-    protected val uiGraph: Graph<Vertex>,
     protected val uiProps: P
-) : GraphAlgorithm, PropertySheetItemsHolder by uiProps {
-    protected var lastReset: Long = System.currentTimeMillis()
-    override var terminated = false
-        protected set
-    protected var props: P = uiProps.copyWritableProps()
-
-    protected abstract fun adaptVertex(vertex: Vertex): V
+) : GraphAlgorithm, PropsHolder by uiProps {
+    protected var lastResetMillis: Long = System.currentTimeMillis()
+    protected var props: P = uiProps.copyInputProps()
 
     override fun reset() {
-        terminated = false
-        lastReset = System.currentTimeMillis()
+        lastResetMillis = System.currentTimeMillis()
     }
 
-    override fun refreshProps() {
-        props = uiProps.copyWritableProps()
+    override fun fixAfterInterruption(): GraphAlgorithm.IterationResult {
+        reset()
+        return GraphAlgorithm.IterationResult.TERMINATED
     }
 
-    protected fun adaptedGraph() = uiGraph.map { adaptVertex(it) }
-
-    protected fun ensureSafePositions(vertices: Collection<VertexLayout>) {
-        if (vertices.all { it.pos == Point2D.ZERO }) setRandomPositions(vertices)
+    override fun refreshInputProps() {
+        props = uiProps.copyInputProps()
     }
 
-    protected fun setRandomPositions(
-        vertices: Collection<VertexLayout>,
-        maxCoordinateDeviation: Double = DEFAULT_MAX_RANDOM_COORDINATE_DEVIATION
-    ) = vertices.forEach {
-        it.pos = Point2D(
-            Random.nextDouble(-maxCoordinateDeviation, maxCoordinateDeviation),
-            Random.nextDouble(-maxCoordinateDeviation, maxCoordinateDeviation)
-        )
-    }
+    override fun updateOutputProps() = Unit
 
     override fun toString() = displayName
 }

@@ -12,7 +12,7 @@ import tornadofx.chooseFile
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class OpenSQLiteAnalyzedGraphIT : ApplicationTest() {
+class OpenSQLiteGraphIT : ApplicationTest() {
     override fun start(stage: Stage) {
         GraphAnalyzerApp().start(stage)
     }
@@ -22,11 +22,11 @@ class OpenSQLiteAnalyzedGraphIT : ApplicationTest() {
     }
 
     @Test
-    fun `when SQLite analyzed graph is opened then then displayed graph properties should be updated`() {
+    fun `when SQLite graph is opened then displayed graph properties should be updated`() {
         mockkStatic(::chooseFile)
         every {
             chooseFile("Open", any(), any(), FileChooserMode.Single, any(), any())
-        } returns listOf(File(javaClass.getResource("/analyzed-graph-sample.sqlite3").file))
+        } returns listOf(File(javaClass.getResource("/sample-graph.sqlite3").file))
         clickOn("File")
         clickOn("Open")
         waitFor(10L, TimeUnit.SECONDS) {

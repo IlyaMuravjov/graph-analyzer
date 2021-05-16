@@ -4,16 +4,7 @@ import org.controlsfx.control.PropertySheet
 import org.controlsfx.property.BeanProperty
 import java.beans.PropertyDescriptor
 
-object EmptyPropertySheetItemsHolder : CopyablePropertySheetItemsHolder<EmptyPropertySheetItemsHolder> {
-    override fun copyWritableProps() = EmptyPropertySheetItemsHolder
-    override val propertySheetItems: List<PropertySheet.Item> get() = emptyList()
-}
-
-interface CopyablePropertySheetItemsHolder<out P : CopyablePropertySheetItemsHolder<P>> : PropertySheetItemsHolder {
-    fun copyWritableProps(): P
-}
-
-interface PropertySheetItemsHolder {
+interface PropsHolder {
     val propertySheetItems: List<PropertySheet.Item>
     fun beanProperty(name: String, displayName: String = name, readOnly: Boolean = false): PropertySheet.Item =
         BeanProperty(
@@ -27,4 +18,13 @@ interface PropertySheetItemsHolder {
                 this.displayName = displayName
             }
         )
+}
+
+interface CopyablePropsHolder<out P : CopyablePropsHolder<P>> : PropsHolder {
+    fun copyInputProps(): P
+}
+
+object EmptyProps : CopyablePropsHolder<EmptyProps> {
+    override fun copyInputProps() = EmptyProps
+    override val propertySheetItems: List<PropertySheet.Item> get() = emptyList()
 }

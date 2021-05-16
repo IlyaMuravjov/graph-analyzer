@@ -1,7 +1,6 @@
 package spbu_coding.graph_analyzer.model.impl.algorithm.community.louvain
 
 import spbu_coding.graph_analyzer.model.VertexCommunity
-import kotlin.math.abs
 import kotlin.math.pow
 
 class LouvainCommunity(private val _id: Int) : VertexCommunity {

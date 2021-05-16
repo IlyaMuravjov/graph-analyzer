@@ -6,14 +6,14 @@ import javafx.stage.StageStyle
 import tornadofx.*
 
 fun <T> UIComponent.runAsyncWithDialog(title: String, daemon: Boolean, func: FXTask<*>.() -> T): Task<T> {
-    var task: Task<T>? = null
+    lateinit var task: Task<T>
     val dialog = dialog(
         title = title,
         modality = Modality.NONE,
         stageStyle = StageStyle.UTILITY
     ) {
         stage.isResizable = false
-        stage.setOnCloseRequest { task?.cancel() }
+        stage.setOnCloseRequest { task.cancel() }
         currentWindow?.let { window ->
             stage.x = window.x + window.width - stage.width - 30.0
             stage.y = window.y + window.height - stage.height - 30.0

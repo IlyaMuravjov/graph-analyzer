@@ -1,17 +1,36 @@
 package spbu_coding.graph_analyzer.model.impl.algorithm.layout
 
+import javafx.geometry.Point2D
 import spbu_coding.graph_analyzer.model.Graph
 import spbu_coding.graph_analyzer.model.Vertex
 import spbu_coding.graph_analyzer.model.VertexLayout
 import spbu_coding.graph_analyzer.model.impl.algorithm.AbstractGraphAlgorithm
-import spbu_coding.graph_analyzer.utils.CopyablePropertySheetItemsHolder
+import spbu_coding.graph_analyzer.model.impl.map
+import spbu_coding.graph_analyzer.utils.CopyablePropsHolder
+import kotlin.random.Random
 
-abstract class AbstractLayoutAlgorithm<out L : VertexLayout, P : CopyablePropertySheetItemsHolder<P>>(
+const val DEFAULT_MAX_RANDOM_COORDINATE_DEVIATION = 100.0
+
+abstract class AbstractLayoutAlgorithm<out L : VertexLayout, P : CopyablePropsHolder<P>>(
     displayName: String,
-    uiGraph: Graph<Vertex>,
+    protected val uiGraph: Graph<Vertex>,
     uiProps: P
-) : AbstractGraphAlgorithm<L, P>(displayName, uiGraph, uiProps) {
+) : AbstractGraphAlgorithm<L, P>(displayName, uiProps) {
     protected abstract fun getVertexLayout(vertex: Vertex): L
 
-    override fun adaptVertex(vertex: Vertex): L = getVertexLayout(vertex).also { vertex.layout = it }
+    protected fun layoutGraph(): Graph<L> = uiGraph.map { v -> getVertexLayout(v).also { v.layout = it } }
+
+    protected fun ensureSafePositions(vertices: Collection<VertexLayout>) {
+        if (vertices.all { it.pos == Point2D.ZERO }) setRandomPositions(vertices)
+    }
+
+    protected fun setRandomPositions(
+        vertices: Collection<VertexLayout>,
+        maxCoordinateDeviation: Double = DEFAULT_MAX_RANDOM_COORDINATE_DEVIATION
+    ) = vertices.forEach {
+        it.pos = Point2D(
+            Random.nextDouble(-maxCoordinateDeviation, maxCoordinateDeviation),
+            Random.nextDouble(-maxCoordinateDeviation, maxCoordinateDeviation)
+        )
+    }
 }

@@ -1,6 +1,8 @@
 package spbu_coding.graph_analyzer.model.impl.algorithm.layout.forceatlas2
 
+import javafx.concurrent.Task
 import spbu_coding.graph_analyzer.model.Graph
+import spbu_coding.graph_analyzer.model.GraphAlgorithm
 import spbu_coding.graph_analyzer.model.Vertex
 import spbu_coding.graph_analyzer.model.impl.algorithm.layout.AbstractLayoutAlgorithm
 import tornadofx.Vector2D
@@ -13,7 +15,7 @@ class ForceAtlas2(
 ) : AbstractLayoutAlgorithm<ForceAtlas2Vertex, ForceAtlas2Props>("ForceAtlas2", uiGraph, ForceAtlas2Props(uiGraph)) {
     private var temperature = 1.0
     private var temperatureEfficiency = 1.0
-    private var graph = adaptedGraph()
+    private var graph = layoutGraph()
 
     override fun reset() {
         temperature = 1.0
@@ -22,11 +24,16 @@ class ForceAtlas2(
         super.reset()
     }
 
+    override fun fixAfterInterruption(): GraphAlgorithm.IterationResult {
+        reset()
+        return GraphAlgorithm.IterationResult.PAUSED
+    }
+
     override fun getVertexLayout(vertex: Vertex): ForceAtlas2Vertex =
         (vertex.layout as? ForceAtlas2Vertex) ?: ForceAtlas2Vertex(vertex.layout)
 
     override fun refreshGraph() {
-        graph = adaptedGraph()
+        graph = layoutGraph()
         graph.vertices.forEach { it.mass = 1.0 }
         graph.edges.forEach {
             it.from.mass++
@@ -34,7 +41,7 @@ class ForceAtlas2(
         }
     }
 
-    override fun runIteration() {
+    override fun runIteration(task: Task<GraphAlgorithm.IterationResult>): GraphAlgorithm.IterationResult {
         ensureSafePositions(graph.vertices)
         graph.vertices.forEach {
             it.oldVelocity = it.velocity
@@ -87,5 +94,6 @@ class ForceAtlas2(
             }
             vertex.pos += factor * vertex.velocity
         }
+        return GraphAlgorithm.IterationResult.UNFINISHED
     }
 }
